@@ -1,0 +1,88 @@
+import type { SearchResult } from "../types/result";
+
+export const MOCK_RESULTS: readonly SearchResult[] = [
+  {
+    id: "mock-games-memory",
+    title: "Call for Papers: Games, Memory and Digital Culture",
+    url: "https://example.org/cfp/games-memory-digital-culture",
+    domain: "example.org",
+    snippet:
+      "A prototype search-result excerpt concerning game studies, memory, play, archives, and digital culture. Full submission details must be checked on the source page.",
+    category: "conference",
+    sourceClass: "association",
+    sourceLabel: "Example Scholarly Association",
+    matchedObjectIds: ["video-games", "digital-media", "narrative-storytelling"],
+    retrievedAt: "2026-07-23T10:00:00.000Z",
+    isMock: true,
+  },
+  {
+    id: "mock-ai-visual-communication",
+    title: "Special Issue: Artificial Intelligence and Visual Communication",
+    url: "https://example.org/journal/ai-visual-communication",
+    domain: "example.org",
+    snippet:
+      "A mock journal call addressing AI-generated imagery, visual communication design, critical media practice, and emerging methods of image production.",
+    category: "journal",
+    sourceClass: "publisher",
+    sourceLabel: "Example Academic Publisher",
+    matchedObjectIds: ["artificial-intelligence", "visual-communication-design"],
+    retrievedAt: "2026-07-23T10:00:00.000Z",
+    isMock: true,
+  },
+  {
+    id: "mock-photography-heritage",
+    title: "Edited Volume: Photography, Archives and Cultural Heritage",
+    url: "https://example.org/books/photography-archives-heritage",
+    domain: "example.org",
+    snippet:
+      "A representative call for chapters on photography, museum collections, archives, heritage interpretation, and visual research methods.",
+    category: "book",
+    sourceClass: "publisher",
+    sourceLabel: "Example University Press",
+    matchedObjectIds: ["photography", "museums-heritage"],
+    retrievedAt: "2026-07-23T10:00:00.000Z",
+    isMock: true,
+  },
+  {
+    id: "mock-interactive-narrative",
+    title: "Symposium CFP: Interactive Narrative and Digital Storytelling",
+    url: "https://example.org/symposium/interactive-narrative",
+    domain: "example.org",
+    snippet:
+      "A mock symposium result about interactive narrative, digital storytelling, video games, film, animation, and cross-media narrative forms.",
+    category: "conference",
+    sourceClass: "official",
+    sourceLabel: "Example Symposium",
+    matchedObjectIds: ["video-games", "film", "animation", "narrative-storytelling"],
+    retrievedAt: "2026-07-23T10:00:00.000Z",
+    isMock: true,
+  },
+  {
+    id: "mock-cities-media",
+    title: "Thematic Issue: Cities, Screens and Platformed Public Life",
+    url: "https://example.org/journal/cities-screens-platforms",
+    domain: "example.org",
+    snippet:
+      "A representative thematic issue on cities, digital platforms, mobile media, public screens, communities, and mediated urban experience.",
+    category: "journal",
+    sourceClass: "publisher",
+    sourceLabel: "Example Media Journal",
+    matchedObjectIds: ["cities-architecture", "internet-digital-platforms", "mobile-media"],
+    retrievedAt: "2026-07-23T10:00:00.000Z",
+    isMock: true,
+  },
+  {
+    id: "mock-podcasts-sound",
+    title: "Call for Chapters: Podcasting, Sound and Public Culture",
+    url: "https://example.org/books/podcasting-sound-culture",
+    domain: "example.org",
+    snippet:
+      "A mock edited-volume call on podcasting, sound studies, music, public culture, communities, and digital distribution.",
+    category: "book",
+    sourceClass: "announcement-hub",
+    sourceLabel: "Example Announcement Hub",
+    matchedObjectIds: ["podcasts", "sound-music"],
+    retrievedAt: "2026-07-23T10:00:00.000Z",
+    isMock: true,
+  },
+];
