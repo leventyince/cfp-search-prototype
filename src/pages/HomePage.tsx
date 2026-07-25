@@ -30,7 +30,7 @@ export function HomePage() {
         <header className="page-intro">
           <p className="comment-line">// Find current calls for papers, journal submissions, and book chapters.</p>
           <p className="comment-line">// Select at least one Object of Study. Multiple selections search for either or both.</p>
-          <p className="comment-line">// The live SearXNG connection will be added in the next implementation batch.</p>
+          <p className="comment-line">// Results are retrieved live through a self-hosted SearXNG search service.</p>
         </header>
 
         <CoverageNotice />
