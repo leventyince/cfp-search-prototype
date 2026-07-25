@@ -4,11 +4,18 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-07-23",
   "workers_dev": true,
+
   "vars": {
     "ALLOWED_ORIGINS": [
       "http://localhost:5173",
       "https://leventyince.github.io",
       "https://leventyince.com"
+    ]
+  },
+
+  "secrets": {
+    "required": [
+      "SEARXNG_BASE_URL"
     ]
   }
 }

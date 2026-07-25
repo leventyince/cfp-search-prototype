@@ -4,12 +4,21 @@ import {
   isOriginAllowed,
   type CorsEnvironment,
 } from "./cors";
-import { validateSearchRequest } from "./validateSearchRequest";
+import {
+  searchSearxng,
+  type SearxngEnvironment,
+} from "./searxng";
+import {
+  validateSearchRequest,
+} from "./validateSearchRequest";
 
-interface Env extends CorsEnvironment {}
+interface Env
+  extends CorsEnvironment,
+    SearxngEnvironment {}
 
 const BASE_JSON_HEADERS = {
-  "Content-Type": "application/json; charset=utf-8",
+  "Content-Type":
+    "application/json; charset=utf-8",
   "Cache-Control": "no-store",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "no-referrer",
@@ -21,27 +30,38 @@ function jsonResponse(
   additionalHeaders: HeadersInit = {},
 ): Response {
   const headers = new Headers(BASE_JSON_HEADERS);
-  const extraHeaders = new Headers(additionalHeaders);
+  const extraHeaders = new Headers(
+    additionalHeaders,
+  );
 
   extraHeaders.forEach((value, key) => {
     headers.set(key, value);
   });
 
-  return new Response(JSON.stringify(body, null, 2), {
-    status,
-    headers,
-  });
+  return new Response(
+    JSON.stringify(body, null, 2),
+    {
+      status,
+      headers,
+    },
+  );
 }
 
 function handleOptionsRequest(
   origin: string | null,
   env: Env,
 ): Response {
-  if (!isOriginAllowed(origin, env.ALLOWED_ORIGINS)) {
+  if (
+    !isOriginAllowed(
+      origin,
+      env.ALLOWED_ORIGINS,
+    )
+  ) {
     return jsonResponse(
       {
         error: "origin_not_allowed",
-        message: "This origin is not permitted to access the service.",
+        message:
+          "This origin is not permitted to access the service.",
       },
       403,
     );
@@ -53,7 +73,10 @@ function handleOptionsRequest(
   });
 }
 
-function routeRequest(request: Request): Response {
+async function routeRequest(
+  request: Request,
+  env: Env,
+): Promise<Response> {
   const url = new URL(request.url);
 
   if (url.pathname === "/health") {
@@ -65,16 +88,19 @@ function routeRequest(request: Request): Response {
 
   if (url.pathname === "/") {
     return jsonResponse({
-      message: "CFP search proxy is running.",
+      message:
+        "CFP search proxy is running.",
       endpoints: {
         health: "/health",
-        search: "/search?q=SEARCH_QUERY&page=1",
+        search:
+          "/search?q=SEARCH_QUERY&page=1",
       },
     });
   }
 
   if (url.pathname === "/search") {
-    const validation = validateSearchRequest(url);
+    const validation =
+      validateSearchRequest(url);
 
     if (!validation.ok) {
       return jsonResponse(
@@ -86,46 +112,83 @@ function routeRequest(request: Request): Response {
       );
     }
 
-    return jsonResponse(
-      {
-        status: "not_implemented",
-        message:
-          "Search request validation passed. SearXNG forwarding is not implemented yet.",
-        request: {
-          query: validation.value.query,
-          page: validation.value.page,
+    const upstreamResult =
+      await searchSearxng(
+        env.SEARXNG_BASE_URL,
+        validation.value,
+      );
+
+    if (!upstreamResult.ok) {
+      return jsonResponse(
+        {
+          error: upstreamResult.error,
+          message: upstreamResult.message,
+          ...(upstreamResult.upstreamStatus !==
+          undefined
+            ? {
+                upstreamStatus:
+                  upstreamResult.upstreamStatus,
+              }
+            : {}),
         },
-      },
-      501,
-    );
+        upstreamResult.status,
+      );
+    }
+
+    return jsonResponse({
+      provider: "searxng",
+      query: validation.value.query,
+      page: validation.value.page,
+      results:
+        upstreamResult.value.results,
+      suggestions:
+        upstreamResult.value.suggestions,
+      unresponsiveEngines:
+        upstreamResult.value
+          .unresponsiveEngines,
+    });
   }
 
   return jsonResponse(
     {
       error: "not_found",
-      message: "The requested endpoint does not exist.",
+      message:
+        "The requested endpoint does not exist.",
     },
     404,
   );
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const origin = request.headers.get("Origin");
-    const originAllowed = isOriginAllowed(
-      origin,
-      env.ALLOWED_ORIGINS,
-    );
+  async fetch(
+    request: Request,
+    env: Env,
+  ): Promise<Response> {
+    const origin =
+      request.headers.get("Origin");
+
+    const originAllowed =
+      isOriginAllowed(
+        origin,
+        env.ALLOWED_ORIGINS,
+      );
 
     if (request.method === "OPTIONS") {
-      return handleOptionsRequest(origin, env);
+      return handleOptionsRequest(
+        origin,
+        env,
+      );
     }
 
-    if (origin !== null && !originAllowed) {
+    if (
+      origin !== null &&
+      !originAllowed
+    ) {
       return jsonResponse(
         {
           error: "origin_not_allowed",
-          message: "This origin is not permitted to access the service.",
+          message:
+            "This origin is not permitted to access the service.",
         },
         403,
       );
@@ -135,7 +198,8 @@ export default {
       const response = jsonResponse(
         {
           error: "method_not_allowed",
-          message: "Only GET and OPTIONS requests are accepted.",
+          message:
+            "Only GET and OPTIONS requests are accepted.",
         },
         405,
         {
@@ -144,14 +208,23 @@ export default {
       );
 
       return originAllowed
-        ? addCorsHeaders(response, origin)
+        ? addCorsHeaders(
+            response,
+            origin,
+          )
         : response;
     }
 
-    const response = routeRequest(request);
+    const response = await routeRequest(
+      request,
+      env,
+    );
 
     return originAllowed
-      ? addCorsHeaders(response, origin)
+      ? addCorsHeaders(
+          response,
+          origin,
+        )
       : response;
   },
 } satisfies ExportedHandler<Env>;
