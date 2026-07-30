@@ -445,6 +445,32 @@ label:has(input:focus-visible) {
   font-weight: 700;
 }
 
+.result-card--expired {
+  opacity: 0.72;
+}
+
+.result-card__deadline {
+  align-self: flex-start;
+  margin: 0.65rem 0 0;
+  border: 1px solid currentColor;
+  padding: 0.22rem 0.42rem;
+  font-size: 0.69rem;
+  font-weight: 800;
+}
+
+.result-card__deadline--future {
+  color: var(--accent-dark);
+}
+
+.result-card__deadline--expired {
+  color: #7a1e14;
+  border-color: #7a1e14;
+}
+
+.result-card__deadline--unknown {
+  color: #555;
+}
+
 .result-card__snippet {
   display: -webkit-box;
   margin: 1rem 0;

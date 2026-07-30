@@ -2,13 +2,15 @@ import {
   OBJECTS_BY_ID,
 } from "../config/objects";
 import type {
-  ResultCategory,
   SearchResult,
   SourceClass,
 } from "../types/result";
 import type {
   ObjectId,
 } from "../types/search";
+import {
+  analyzeResultQuality,
+} from "./analyzeResultQuality";
 
 function isRecord(
   value: unknown,
@@ -34,6 +36,25 @@ function readString(
     : null;
 }
 
+const LEADING_SNIPPET_DATE_PATTERN =
+  /^(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Sept|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?[,]?\s+20\d{2}|\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Sept|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,]?\s+20\d{2}|20\d{2}-\d{1,2}-\d{1,2})\s*(?:[-–—]|\.\.\.|\.|·)?\s*/i;
+
+function cleanSearchSnippet(
+  value: string,
+): string {
+  const cleaned = value
+    .replace(
+      LEADING_SNIPPET_DATE_PATTERN,
+      "",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return cleaned.length > 0
+    ? cleaned
+    : value;
+}
+
 function parseHttpUrl(
   value: unknown,
 ): URL | null {
@@ -57,40 +78,6 @@ function parseHttpUrl(
   } catch {
     return null;
   }
-}
-
-function classifyCategory(
-  title: string,
-  snippet: string,
-): ResultCategory {
-  const text =
-    `${title} ${snippet}`.toLowerCase();
-
-  if (
-    /\b(call for chapters?|edited volume|chapter proposals?|book chapters?)\b/i.test(
-      text,
-    )
-  ) {
-    return "book";
-  }
-
-  if (
-    /\b(special issue|thematic issue|journal issue|journal submissions?)\b/i.test(
-      text,
-    )
-  ) {
-    return "journal";
-  }
-
-  if (
-    /\b(call for papers?|call for abstracts?|conference|symposium|congress|doctoral consortium|workshop)\b/i.test(
-      text,
-    )
-  ) {
-    return "conference";
-  }
-
-  return "unclassified";
 }
 
 function classifySource(
@@ -228,6 +215,7 @@ function hashString(
 export function normalizeSearxngResults(
   rawResults: readonly unknown[],
   selectedObjectIds: readonly ObjectId[],
+  now = new Date(),
 ): SearchResult[] {
   const normalizedResults: SearchResult[] =
     [];
@@ -269,33 +257,47 @@ export function normalizeSearxngResults(
       "",
     );
 
+    const rawSnippet =
+    readString(rawResult.content) ??
+    "No excerpt was returned for this search result.";
+
     const snippet =
-      readString(rawResult.content) ??
-      "No excerpt was returned for this search result.";
+    cleanSearchSnippet(rawSnippet);
+
+    const quality = analyzeResultQuality(
+    title,
+    rawSnippet,
+    now,
+    );
+
+    if (!quality.shouldInclude) {
+      continue;
+    }
 
     normalizedResults.push({
-      id: `live-${hashString(
+    id: `live-${hashString(
         canonicalUrl,
-      )}`,
-      title,
-      url: canonicalUrl,
-      domain,
-      snippet,
-      category: classifyCategory(
+    )}`,
+    title,
+    url: canonicalUrl,
+    domain,
+    snippet,
+    category: quality.category,
+    sourceClass:
+        classifySource(domain),
+    sourceLabel: domain,
+    matchedObjectIds:
+        findMatchedObjects(
         title,
         snippet,
-      ),
-      sourceClass:
-        classifySource(domain),
-      sourceLabel: domain,
-      matchedObjectIds:
-        findMatchedObjects(
-          title,
-          snippet,
-          selectedObjectIds,
+        selectedObjectIds,
         ),
-      retrievedAt,
-      isMock: false,
+    callConfidence:
+        quality.callConfidence,
+    deadline: quality.deadline,
+    qualityRank: quality.qualityRank,
+    retrievedAt,
+    isMock: false,
     });
   }
 

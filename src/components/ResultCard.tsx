@@ -9,13 +9,34 @@ interface ResultCardProps {
   result: SearchResult;
 }
 
+function getCallLabel(
+  result: SearchResult,
+): string {
+  return result.callConfidence ===
+    "strong"
+    ? "Likely call"
+    : "Possible call";
+}
+
 export function ResultCard({
   result,
 }: ResultCardProps) {
+  const deadlineStatus =
+    result.deadline?.status ??
+    "unknown";
+
+  const cardClasses = [
+    "result-card",
+    `result-card--${result.category}`,
+    deadlineStatus === "expired"
+      ? "result-card--expired"
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <article
-      className={`result-card result-card--${result.category}`}
-    >
+    <article className={cardClasses}>
       <div className="result-card__topline">
         <p className="result-card__category">
           {result.category.replace(
@@ -39,6 +60,37 @@ export function ResultCard({
       <p className="result-card__source">
         {result.sourceLabel} ·{" "}
         {result.domain}
+      </p>
+
+      <p
+        className={
+          `result-card__deadline ` +
+          `result-card__deadline--${deadlineStatus}`
+        }
+        title="Deadline detection uses the search-result excerpt. Verify the source page."
+      >
+        {result.deadline ? (
+          <>
+            <span>
+              {result.deadline.status ===
+              "expired"
+                ? "Likely expired"
+                : "Deadline detected"}
+            </span>
+
+            {" · "}
+
+            <time
+              dateTime={
+                result.deadline.isoDate
+              }
+            >
+              {result.deadline.label}
+            </time>
+          </>
+        ) : (
+          "Deadline not detected"
+        )}
       </p>
 
       <p className="result-card__snippet">
@@ -66,7 +118,9 @@ export function ResultCard({
       ) : null}
 
       <div className="result-card__footer">
-        <span>Live search result</span>
+        <span>
+          {getCallLabel(result)}
+        </span>
 
         <a
           className="text-action"
