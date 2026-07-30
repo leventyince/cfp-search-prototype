@@ -217,7 +217,11 @@ export function ResultsPage() {
         );
       }
 
-      return filtered;
+      return [...filtered].sort(
+        (first, second) =>
+          (first.qualityRank ?? 2) -
+          (second.qualityRank ?? 2),
+      );
     }, [
       knownOnly,
       liveResults,
