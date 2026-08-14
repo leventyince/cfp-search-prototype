@@ -10,9 +10,7 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint .",
-    "backend:start": "bash scripts/start-prototype-backend.sh",
-    "backend:stop": "bash scripts/stop-prototype-backend.sh"
+    "lint": "eslint ."
   },
   "dependencies": {
     "react": "^19.2.6",
