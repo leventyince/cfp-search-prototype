@@ -114,7 +114,7 @@ async function routeRequest(
 
     const upstreamResult =
       await searchSearxng(
-        env.SEARXNG_BASE_URL,
+        env,
         validation.value,
       );
 

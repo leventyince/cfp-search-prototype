@@ -4,6 +4,8 @@ import type {
 
 export interface SearxngEnvironment {
   SEARXNG_BASE_URL: string;
+  CF_ACCESS_CLIENT_ID: string;
+  CF_ACCESS_CLIENT_SECRET: string;
 }
 
 export interface SearxngPayload {
@@ -87,14 +89,14 @@ export function buildSearxngSearchUrl(
 }
 
 export async function searchSearxng(
-  baseUrl: string,
+  env: SearxngEnvironment,
   request: ValidatedSearchRequest,
 ): Promise<SearxngSearchResult> {
   let upstreamUrl: URL;
 
   try {
     upstreamUrl = buildSearxngSearchUrl(
-      baseUrl,
+      env.SEARXNG_BASE_URL,
       request,
     );
   } catch {
@@ -117,6 +119,10 @@ export async function searchSearxng(
       method: "GET",
       headers: {
         Accept: "application/json",
+        "CF-Access-Client-Id":
+          env.CF_ACCESS_CLIENT_ID,
+        "CF-Access-Client-Secret":
+          env.CF_ACCESS_CLIENT_SECRET,
       },
       redirect: "follow",
       signal: controller.signal,
