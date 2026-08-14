@@ -15,7 +15,9 @@
 
   "secrets": {
     "required": [
-      "SEARXNG_BASE_URL"
+      "SEARXNG_BASE_URL",
+      "CF_ACCESS_CLIENT_ID",
+      "CF_ACCESS_CLIENT_SECRET"
     ]
   }
 }
