@@ -2,6 +2,14 @@
 
 set -euo pipefail
 
+printf '%s\n' \
+  'ERROR: This is legacy Quick Tunnel automation.' \
+  'The current persistent school backend must not be stopped with this script.' \
+  'See docs/legacy-quick-tunnel-runbook.md.' \
+  >&2
+
+exit 1
+
 VM_HOST="${CFP_VM_HOST:-levent@192.168.0.33}"
 VM_APP_DIR="${CFP_VM_APP_DIR:-/home/levent/searxng}"
 
